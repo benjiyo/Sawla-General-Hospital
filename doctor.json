@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Dr. Bisrat",
+    "specialty": "General Surgeon",
+    "department": "Surgery",
+    "experience": "5+ years",
+    "bio": "Leads our surgical services with special interest in minimally invasive and trauma procedures.",
+    "photo": "../images/doctors/dr biserat.png"
+  },
+  {
+    "id": 2,
+    "name": "Dr. Getaneh",
+    "specialty": "General Surgeon",
+    "department": "Surgery",
+    "experience": "4+ years",
+    "bio": "Focuses on abdominal surgeries while mentoring junior surgeons.",
+    "photo": "../images/doctors/dr getaneh.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Dr. Ashenafi",
+    "specialty": "Paediatrician",
+    "department": "Paediatrics",
+    "experience": "4+ years",
+    "bio": "Champions child wellness clinics and growth monitoring for high-risk infants.",
+    "photo": "../images/doctors/dr ashenafi.png"
+  },
+  {
+    "id": 4,
+    "name": "Dr. Mintesinot",
+    "specialty": "Paediatrician",
+    "department": "Paediatrics",
+    "experience": "3+ years",
+    "bio": "Specialises in childhood respiratory illnesses and adolescent health counselling.",
+    "photo": "../images/doctors/dr minte.png"
+  },
+  {
+    "id": 5,
+    "name": "Dr. Glande",
+    "specialty": "Obstetrician / Gynaecologist",
+    "department": "Obstetrics & Gynaecology",
+    "experience": "5+ years",
+    "bio": "Provides comprehensive women’s health services including high-risk pregnancy care.",
+    "photo": "../images/doctors/dr glande.png"
+  },
+  {
+    "id": 6,
+    "name": "Dr. Abenezer",
+    "specialty": "Internist",
+    "department": "Internal Medicine",
+    "experience": "4+ years",
+    "bio": "Manages chronic conditions like diabetes and hypertension with a holistic approach.",
+    "photo": "../images/doctors/dr abeni.jpg"
+  },
+  {
+    "id": 7,
+    "name": "Dr. biruk",
+    "specialty": "Orthopaedic Surgeon",
+    "department": "Orthopaedics",
+    "experience": "3+ years",
+    "bio": "Handles joint replacements, fracture repairs, and sports injury rehabilitation.",
+    "photo": "../images/doctors/dr biruk..png"
+  },
+  {
+    "id": 8,
+    "name": "Dr. kinde",
+    "specialty": "Pathologist",
+    "department": "Pathology",
+    "experience": "5+ years",
+    "bio": "Handles pathologic diagnosis of diseases.",
+    "photo": "../images/doctors/dr kinde.png"
+  }
+]
