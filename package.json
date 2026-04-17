@@ -1,0 +1,22 @@
+{
+  "name": "webhos-server",
+  "version": "1.0.0",
+  "description": "Local dev server for Sawla General Hospital site (news admin + API)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.15.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.3.0",
+    "node-fetch": "^2.6.7",
+    "nodemailer": "^8.0.1"
+  }
+}

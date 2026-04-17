@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Archived News Admin | Sawla General Hospital</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      .archive-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .archive-item {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+      .archive-item img {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+      }
+      .archive-meta {
+        flex: 1;
+      }
+      .btn {
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-restore {
+        background: #2b8a3e;
+        color: white;
+        border: none;
+      }
+      .btn-back {
+        background: transparent;
+        border: 1px solid #666;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Archived News</h1>
+      <div id="loginBox">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="adminUser">Username</label>
+            <input id="adminUser" />
+          </div>
+          <div class="form-group">
+            <label for="adminPass">Password</label>
+            <input id="adminPass" type="password" />
+          </div>
+        </div>
+        <div style="margin-top: 0.5rem">
+          <button id="loginBtn" class="btn">Log in</button>
+        </div>
+        <p id="loginStatus"></p>
+      </div>
+
+      <div id="archiveUI" style="display: none">
+        <p>
+          This page lists archived news items. Click <strong>Restore</strong> to
+          push an item back to the active news (it will appear on the public
+          page). Restoring will keep only the latest 3 items active and
+          re-archive older items.
+        </p>
+
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <input
+            id="q"
+            placeholder="Search title or text"
+            style="flex: 1; padding: 0.4rem"
+          />
+          <select id="pageSize" style="margin-left: 0.5rem">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+          </select>
+          <button id="searchBtn" class="btn" style="margin-left: 0.5rem">
+            Search
+          </button>
+        </div>
+
+        <div id="archiveList" class="archive-list"></div>
+        <div
+          id="pagination"
+          style="
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+          "
+        ></div>
+        <p id="adminMsg"></p>
+        <p><a href="about.html" class="btn btn-back">Back</a></p>
+      </div>
+    </main>
+    <script>
+      const loginBtn = document.getElementById("loginBtn");
+      const loginStatus = document.getElementById("loginStatus");
+      const loginBox = document.getElementById("loginBox");
+      const archiveUI = document.getElementById("archiveUI");
+      const archiveList = document.getElementById("archiveList");
+      const adminMsg = document.getElementById("adminMsg");
+
+      function showLogin() {
+        loginBox.style.display = "block";
+        archiveUI.style.display = "none";
+      }
+      function showUI() {
+        loginBox.style.display = "none";
+        archiveUI.style.display = "block";
+      }
+
+      let currentPage = 1;
+      function buildQuery() {
+        const q = document.getElementById("q").value.trim();
+        const pageSize = document.getElementById("pageSize").value;
+        const params = new URLSearchParams();
+        params.set("page", currentPage);
+        params.set("pageSize", pageSize);
+        if (q) params.set("q", q);
+        return params.toString();
+      }
+
+      async function fetchArchive() {
+        archiveList.innerHTML = "Loading...";
+        const qs = buildQuery();
+        try {
+          const res = await fetch("/api/news/archive?" + qs, {
+            credentials: "include",
+          });
+          if (!res.ok) {
+            archiveList.innerHTML = "Unable to load archive.";
+            return;
+          }
+          const data = await res.json();
+          const items = data.items || data;
+          const total = data.total || (Array.isArray(data) ? data.length : 0);
+          if (!items || !items.length) {
+            archiveList.innerHTML = "<em>No archived items</em>";
+            buildPagination(
+              0,
+              currentPage,
+              parseInt(document.getElementById("pageSize").value, 10),
+            );
+            return;
+          }
+          archiveList.innerHTML = "";
+          items.forEach((it) => {
+            const div = document.createElement("div");
+            div.className = "archive-item";
+            const img = document.createElement("img");
+            img.src = it.image || "../images/news/placeholder.jpg";
+            const meta = document.createElement("div");
+            meta.className = "archive-meta";
+            meta.innerHTML = `<h3>${escapeHtml(it.title || "Untitled")}</h3><div>${escapeHtml(it.publish_date || it.date || "")}</div><p>${escapeHtml(it.summary || it.excerpt || "")}</p>`;
+            const btn = document.createElement("button");
+            btn.className = "btn btn-restore";
+            btn.textContent = "Restore";
+            btn.addEventListener("click", () => restoreItem(it.id));
+            div.appendChild(img);
+            div.appendChild(meta);
+            div.appendChild(btn);
+            archiveList.appendChild(div);
+          });
+          buildPagination(
+            total,
+            currentPage,
+            parseInt(document.getElementById("pageSize").value, 10),
+          );
+        } catch (e) {
+          archiveList.innerHTML = "Error loading archive.";
+        }
+      }
+
+      function buildPagination(total, page, pageSize) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+        const pages = Math.max(1, Math.ceil(total / pageSize));
+        const info = document.createElement("div");
+        info.textContent = `Page ${page} of ${pages} — ${total} items`;
+        pagination.appendChild(info);
+        const prev = document.createElement("button");
+        prev.className = "btn";
+        prev.textContent = "Prev";
+        prev.disabled = page <= 1;
+        prev.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage--;
+            fetchArchive();
+          }
+        });
+        pagination.appendChild(prev);
+        const next = document.createElement("button");
+        next.className = "btn";
+        next.textContent = "Next";
+        next.disabled = page >= pages;
+        next.addEventListener("click", () => {
+          if (currentPage < pages) {
+            currentPage++;
+            fetchArchive();
+          }
+        });
+        pagination.appendChild(next);
+      }
+
+      async function restoreItem(id) {
+        adminMsg.textContent = "";
+        if (!confirm("Restore this item to the active news?")) return;
+        try {
+          const res = await fetch("/api/news/archive/restore", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+          const j = await res.json();
+          if (res.ok && j.success) {
+            adminMsg.style.color = "green";
+            adminMsg.textContent = "Item restored.";
+            fetchArchive();
+          } else {
+            adminMsg.style.color = "crimson";
+            adminMsg.textContent = j.error || "Restore failed";
+            if (res.status === 401) showLogin();
+          }
+        } catch (e) {
+          adminMsg.style.color = "crimson";
+          adminMsg.textContent = "Restore request failed.";
+        }
+      }
+
+      document.getElementById("searchBtn").addEventListener("click", () => {
+        currentPage = 1;
+        fetchArchive();
+      });
+      document.getElementById("pageSize").addEventListener("change", () => {
+        currentPage = 1;
+        fetchArchive();
+      });
+
+      loginBtn.addEventListener("click", async () => {
+        loginStatus.textContent = "";
+        const username = document.getElementById("adminUser").value;
+        const password = document.getElementById("adminPass").value;
+        try {
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, password }),
+          });
+          const j = await res.json();
+          if (res.ok && j.success) {
+            sessionStorage.setItem("isWriter", "true");
+            showUI();
+            fetchArchive();
+          } else {
+            loginStatus.style.color = "crimson";
+            loginStatus.textContent = j.error || "Login failed";
+          }
+        } catch (e) {
+          loginStatus.textContent = "Unable to reach server";
+        }
+      });
+
+      function escapeHtml(s) {
+        return String(s || "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+
+      // init
+      if (sessionStorage.getItem("isWriter") === "true") {
+        showUI();
+        fetchArchive();
+      } else {
+        showLogin();
+      }
+    </script>
+  </body>
+</html>
